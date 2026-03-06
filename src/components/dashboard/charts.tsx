@@ -57,7 +57,7 @@ export function DashboardCharts({ data }: { data: CategoryData[] }) {
                             />
                             <Tooltip
                                 contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff10', borderRadius: '12px', color: '#fff' }}
-                                formatter={(v: number, name: string) => [`$${v.toLocaleString()}`, name.charAt(0).toUpperCase() + name.slice(1)]}
+                                formatter={(v: number | undefined, name: string | undefined) => [`$${(v ?? 0).toLocaleString()}`, (name ?? '').charAt(0).toUpperCase() + (name ?? '').slice(1)]}
                             />
                             <Bar dataKey="spent" name="spent" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                             <Bar dataKey="allocated" name="allocated" fill="#6366f1" radius={[4, 4, 0, 0]} />
@@ -82,7 +82,7 @@ export function DashboardCharts({ data }: { data: CategoryData[] }) {
                                 </Pie>
                                 <Tooltip
                                     contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff10', borderRadius: '12px' }}
-                                    formatter={(v: number) => [`$${v.toLocaleString()}`, 'Allocated']}
+                                    formatter={(v: number | undefined) => [`$${(v ?? 0).toLocaleString()}`, 'Allocated']}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
