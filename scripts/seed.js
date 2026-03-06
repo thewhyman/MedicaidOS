@@ -1,96 +1,140 @@
 const { createClient } = require('@supabase/supabase-js')
-const fs = require('fs')
-const path = require('path')
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env.local') })
 
-console.log('Current CWD:', process.cwd())
-const envPath = path.resolve(process.cwd(), '.env.local')
-console.log('Resolved .env.local path:', envPath)
-console.log('.env.local exists:', fs.existsSync(envPath))
-
-const result = require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') })
-if (result.error) {
-    console.log('⚠️ Could not load .env.local, trying .env...')
-    require('dotenv').config()
-}
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY // Need service role for seeding
-
-console.log('Supabase URL:', supabaseUrl ? 'Set' : 'NOT SET')
-console.log('Supabase Key:', supabaseKey && supabaseKey !== 'your_service_role_key' ? 'Set' : 'NOT SET (or placeholder)')
-
-if (!supabaseUrl) {
-    throw new Error("supabaseUrl is missing from environment variables. Please check .env.local")
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey)
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+)
 
 async function seed() {
-    console.log('🚀 Seeding data...')
+    console.log('🚀 Seeding MedicaidOS...\n')
 
-    const testOrgs = [
-        {
-            name: 'Safe Net Health', users: [
-                { email: 'admin@safenet.org', password: 'Password123!', role: 'admin', full_name: 'Sarah Admin' },
-                { email: 'manager@safenet.org', password: 'Password123!', role: 'grant_manager', full_name: 'Mike Manager' }
-            ]
-        },
-        {
-            name: 'Community Care', users: [
-                { email: 'director@community.org', password: 'Password123!', role: 'finance_director', full_name: 'David Director' },
-                { email: 'coordinator@community.org', password: 'Password123!', role: 'grant_manager', full_name: 'Clara Coord' }
-            ]
-        }
-    ]
+    // ── 1. Organization ───────────────────────────────────────────────
+    const { data: org, error: orgError } = await supabase
+        .from('organizations')
+        .insert({ name: 'CareBridge Health' })
+        .select()
+        .single()
 
-    for (const orgData of testOrgs) {
-        // 1. Create Organization
-        const { data: org, error: orgError } = await supabase
-            .from('organizations')
-            .insert({ name: orgData.name })
-            .select()
-            .single()
+    if (orgError) { console.error('Org error:', orgError.message); process.exit(1) }
+    console.log(`✅ Org: ${org.name}`)
 
-        if (orgError) {
-            console.error(`Error creating org ${orgData.name}:`, orgError.message)
-            continue
-        }
+    // ── 2. Auth user + profile ────────────────────────────────────────
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: 'demo@medicaidos.com',
+        password: 'demo1234',
+        email_confirm: true,
+        user_metadata: { full_name: 'Alex Johnson' }
+    })
 
-        console.log(`✅ Created Org: ${org.name}`)
+    if (authError) { console.error('Auth error:', authError.message); process.exit(1) }
 
-        for (const userData of orgData.users) {
-            // 2. Create Auth User (Bypasses email confirmation)
-            const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-                email: userData.email,
-                password: userData.password,
-                email_confirm: true,
-                user_metadata: { full_name: userData.full_name }
-            })
+    await supabase.from('profiles').insert({
+        id: authData.user.id,
+        organization_id: org.id,
+        full_name: 'Alex Johnson',
+        role: 'admin',
+    })
+    console.log(`✅ User: demo@medicaidos.com / demo1234`)
 
-            if (authError) {
-                console.error(`Error creating auth user ${userData.email}:`, authError.message)
-                continue
-            }
+    // ── 3. Grants ─────────────────────────────────────────────────────
+    const { data: grants, error: grantsError } = await supabase
+        .from('grants')
+        .insert([
+            {
+                organization_id: org.id,
+                title: 'Community Health Access Program',
+                funder: 'California Dept. of Public Health',
+                amount: 250000,
+                status: 'active',
+                start_date: '2026-01-01',
+                end_date: '2026-12-31',
+                compliance_requirements: 'Quarterly financial reports; annual beneficiary impact assessment',
+            },
+            {
+                organization_id: org.id,
+                title: 'Healthcare Infrastructure Expansion',
+                funder: 'Federal Health Resources Administration',
+                amount: 1200000,
+                status: 'active',
+                start_date: '2026-03-01',
+                end_date: '2027-06-30',
+                compliance_requirements: 'Monthly progress reports; site inspections every 6 months',
+            },
+            {
+                organization_id: org.id,
+                title: 'Medicaid Renewal Assistance',
+                funder: 'Local Health Initiative',
+                amount: 85000,
+                status: 'completed',
+                start_date: '2025-01-01',
+                end_date: '2025-12-31',
+                compliance_requirements: 'Bi-annual financial audits',
+            },
+            {
+                organization_id: org.id,
+                title: 'Rural Telehealth Expansion',
+                funder: 'HRSA Telehealth Program',
+                amount: 320000,
+                status: 'pending',
+                start_date: '2026-06-01',
+                end_date: '2027-12-31',
+                compliance_requirements: 'Quarterly utilization reports',
+            },
+        ])
+        .select()
 
-            // 3. Create Profile
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .insert({
-                    id: authUser.user.id,
-                    organization_id: org.id,
-                    full_name: userData.full_name,
-                    role: userData.role
-                })
+    if (grantsError) { console.error('Grants error:', grantsError.message); process.exit(1) }
+    console.log(`✅ Grants: ${grants.length} created`)
 
-            if (profileError) {
-                console.error(`Error creating profile for ${userData.email}:`, profileError.message)
-            } else {
-                console.log(`   👤 Created User: ${userData.email} (${userData.role})`)
-            }
-        }
-    }
+    const [g1, g2, g3, g4] = grants
 
-    console.log('✨ Seeding complete!')
+    // ── 4. Budgets ────────────────────────────────────────────────────
+    const { error: budgetsError } = await supabase.from('budgets').insert([
+        // Community Health Access Program
+        { grant_id: g1.id, category: 'Personnel',       allocated: 120000, spent: 88000 },
+        { grant_id: g1.id, category: 'Direct Services', allocated: 90000,  spent: 71500 },
+        { grant_id: g1.id, category: 'Outreach',        allocated: 40000,  spent: 17200 },
+        // Healthcare Infrastructure Expansion
+        { grant_id: g2.id, category: 'Infrastructure',  allocated: 800000, spent: 423000 },
+        { grant_id: g2.id, category: 'Equipment',       allocated: 250000, spent: 97500 },
+        { grant_id: g2.id, category: 'Personnel',       allocated: 150000, spent: 61800 },
+        // Medicaid Renewal Assistance (completed — fully spent)
+        { grant_id: g3.id, category: 'Direct Services', allocated: 60000,  spent: 59200 },
+        { grant_id: g3.id, category: 'Admin',           allocated: 25000,  spent: 24100 },
+        // Rural Telehealth Expansion (pending — nothing spent yet)
+        { grant_id: g4.id, category: 'Technology',      allocated: 200000, spent: 0 },
+        { grant_id: g4.id, category: 'Personnel',       allocated: 120000, spent: 0 },
+    ])
+
+    if (budgetsError) { console.error('Budgets error:', budgetsError.message); process.exit(1) }
+    console.log(`✅ Budgets: 10 created`)
+
+    // ── 5. Compliance logs ────────────────────────────────────────────
+    const { error: complianceError } = await supabase.from('compliance_logs').insert([
+        // Grant 1
+        { grant_id: g1.id, requirement: 'Q1 Financial Report',              status: 'completed',   due_date: '2026-03-31', completed_at: '2026-03-27' },
+        { grant_id: g1.id, requirement: 'Q2 Financial Report',              status: 'in_progress', due_date: '2026-06-30' },
+        { grant_id: g1.id, requirement: 'Annual Beneficiary Assessment',    status: 'not_started', due_date: '2026-12-15' },
+        // Grant 2
+        { grant_id: g2.id, requirement: 'Monthly Financial Statement — Feb', status: 'overdue',    due_date: '2026-02-28' },
+        { grant_id: g2.id, requirement: 'March Progress Report',            status: 'in_progress', due_date: '2026-03-31' },
+        { grant_id: g2.id, requirement: 'Site Inspection #1',               status: 'not_started', due_date: '2026-09-01' },
+        // Grant 3 (completed grant)
+        { grant_id: g3.id, requirement: 'Final Audit Report',               status: 'completed',   due_date: '2026-01-31', completed_at: '2026-01-29' },
+        { grant_id: g3.id, requirement: 'Close-out Financial Statement',    status: 'completed',   due_date: '2026-02-15', completed_at: '2026-02-12' },
+        // Grant 4
+        { grant_id: g4.id, requirement: 'Kick-off Utilization Report',     status: 'not_started', due_date: '2026-09-30' },
+    ])
+
+    if (complianceError) { console.error('Compliance error:', complianceError.message); process.exit(1) }
+    console.log(`✅ Compliance logs: 9 created`)
+
+    console.log('\n🎉 Seed complete!')
+    console.log('─────────────────────────────')
+    console.log('📧  demo@medicaidos.com')
+    console.log('🔑  demo1234')
 }
 
 seed().catch(console.error)
