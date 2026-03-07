@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -322,6 +322,15 @@ function GrantCard({ grant, onEdit }: { grant: Grant; onEdit: () => void }) {
 export function GrantsList({ grants }: { grants: Grant[] }) {
     const [searchTerm, setSearchTerm] = useState('')
     const [modalGrant, setModalGrant] = useState<Grant | null | 'new'>(null)
+    const searchParams = useSearchParams()
+    const router = useRouter()
+
+    useEffect(() => {
+        if (searchParams.get('new') === '1') {
+            setModalGrant('new')
+            router.replace('/grants')
+        }
+    }, [searchParams, router])
 
     const filtered = grants.filter(g =>
         g.title.toLowerCase().includes(searchTerm.toLowerCase()) ||

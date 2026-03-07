@@ -16,7 +16,6 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
-import { toast } from 'sonner'
 
 const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -51,9 +50,7 @@ export function Sidebar() {
                 <div>
                     <div className="px-2 mb-4">
                         <button
-                            onClick={() => toast.success("New Grant creation triggered", {
-                                description: "Opening grant initiation workflow.",
-                            })}
+                            onClick={() => router.push('/grants?new=1')}
                             className="w-full flex items-center justify-center space-x-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl py-2.5 transition-all active:scale-[0.98]"
                             suppressHydrationWarning
                         >
