@@ -21,6 +21,10 @@ This will be a SaaS app with a subscription model. Users belonging to the same o
 - Centralized database for all active and historical grants.
 - Document storage for grant agreements and funder communications.
 - AI-powered grant matching to discover new funding opportunities based on organizational profile.
+- Ability to import grants from CSV files. Check for duplicates before importing.
+- Add ability to delete or edit grants.
+- Add ability to add grants manually.
+
 
 ### 2. Budget Management
 - Multi-dimensional budget tracking (by grant, by department, by category).

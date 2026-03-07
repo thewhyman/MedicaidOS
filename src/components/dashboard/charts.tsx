@@ -81,7 +81,7 @@ export function DashboardCharts({ data }: { data: CategoryData[] }) {
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                                    contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff10', borderRadius: '12px', color: '#fff' }}
                                     formatter={(v: number | undefined) => [`$${(v ?? 0).toLocaleString()}`, 'Allocated']}
                                 />
                             </PieChart>

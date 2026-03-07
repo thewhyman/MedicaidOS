@@ -5,9 +5,16 @@ import type { Grant, BudgetWithGrant, ComplianceLogWithGrant, DashboardStats } f
 // Admin client bypasses RLS — used server-side only with verified user org filtering.
 // The service role key is never sent to the browser.
 function createAdminClient() {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY
+
+    if (!supabaseUrl || !serviceRoleKey) {
+        throw new Error('Supabase admin env vars missing. Expected NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.')
+    }
+
     return createSupabaseClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        supabaseUrl,
+        serviceRoleKey,
         { auth: { autoRefreshToken: false, persistSession: false } }
     )
 }

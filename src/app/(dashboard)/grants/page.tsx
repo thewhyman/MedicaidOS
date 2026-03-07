@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Filter, Sparkles, Calendar } from 'lucide-react'
 import { getGrants } from '@/lib/supabase/queries'
 import { GrantsList } from '@/components/grants/grants-list'
-import { NewGrantButton } from '@/components/grants/new-grant-button'
+import { ImportCSVButton } from '@/components/grants/import-csv-button'
 
 export default async function GrantsPage() {
     const grants = await getGrants()
@@ -26,7 +26,7 @@ export default async function GrantsPage() {
                         <Filter className="w-4 h-4 mr-2" />
                         Filter
                     </Button>
-                    <NewGrantButton />
+                    <ImportCSVButton />
                 </div>
             </div>
 
