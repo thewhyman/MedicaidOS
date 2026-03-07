@@ -33,7 +33,8 @@ This will be a SaaS app with a subscription model. Users belonging to the same o
 
 ### 3. Compliance Management
 - Dynamic checklist for grant-specific requirements.
-- AI-driven "Policy Scan" that reads grant agreements and extracts reporting dates/conditions.
+- AI-driven "Policy Scan" that reads grant agreements and extracts reporting dates/conditions. 
+- Provide abiility to read uploaded documents and extract relevant information using OpenAI API.
 - Alert system for upcoming deadlines and potential risk areas.
 
 ### 4. Reporting & Analytics

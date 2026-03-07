@@ -4,15 +4,14 @@ import {
     CheckCircle2,
     Clock,
     AlertCircle,
-    FileSearch,
     Calendar,
     MoreVertical,
     Activity,
-    ArrowRight,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { getComplianceLogs } from '@/lib/supabase/queries'
+import { getComplianceLogs, getGrants } from '@/lib/supabase/queries'
 import { ComplianceScanButton } from '@/components/compliance/compliance-scan-button'
+import { PolicyAnalyzer } from '@/components/compliance/policy-analyzer'
 import type { ComplianceLogWithGrant } from '@/types/database'
 
 const statusConfig: Record<string, { color: string; icon: React.ElementType; bg: string }> = {
@@ -61,7 +60,7 @@ function ComplianceCard({ task }: { task: ComplianceLogWithGrant }) {
 }
 
 export default async function CompliancePage() {
-    const tasks = await getComplianceLogs()
+    const [tasks, grants] = await Promise.all([getComplianceLogs(), getGrants()])
     const completedCount = tasks.filter(t => t.status === 'completed').length
     const complianceScore = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0
     const circumference = 364.4
@@ -106,31 +105,7 @@ export default async function CompliancePage() {
                 </div>
 
                 <div className="space-y-6">
-                    <Card className="border-purple-500/20 bg-purple-600/5 backdrop-blur-xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-4 opacity-10">
-                            <FileSearch className="w-12 h-12 text-purple-400" />
-                        </div>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-sm font-bold text-purple-400 flex items-center">
-                                <FileSearch className="w-4 h-4 mr-2" />
-                                AI POLICY ANALYSIS
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <p className="text-xs text-zinc-400 italic leading-relaxed">
-                                Upload grant agreements to have AI automatically extract reporting dates, conditions, and compliance requirements.
-                            </p>
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                className="w-full text-xs border-purple-500/30 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300 rounded-xl transition-all"
-                                disabled
-                            >
-                                Coming Soon
-                                <ArrowRight className="w-3 h-3 ml-2" />
-                            </Button>
-                        </CardContent>
-                    </Card>
+                    <PolicyAnalyzer grants={grants} />
 
                     <Card className="border-zinc-800 bg-zinc-950">
                         <CardHeader className="pb-3 border-b border-zinc-900">
