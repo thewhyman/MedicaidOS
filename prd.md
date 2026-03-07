@@ -25,7 +25,6 @@ This will be a SaaS app with a subscription model. Users belonging to the same o
 - Add ability to delete or edit grants.
 - Add ability to add grants manually.
 
-
 ### 2. Budget Management
 - Multi-dimensional budget tracking (by grant, by department, by category).
 - Real-time expenditure vs. allocation visualization.
@@ -44,6 +43,15 @@ This will be a SaaS app with a subscription model. Users belonging to the same o
 - Store reports in Supabase Storage.
 - Provide ability to share reports with other users in the organization.
 - Customizable report builders for specific funder formats.
+
+### 5. Settings
+- Provide ability to change password.
+- Provide ability to change email.
+- Provide ability to change name.
+- Provide ability to view role.
+- Provide ability to view organization details.
+- Provide ability to sign out of the application.
+
 
 ## Tech Stack
 - **Frontend**: Next.js 16 (App Router), React, Tailwind CSS.
