@@ -40,6 +40,9 @@ This will be a SaaS app with a subscription model. Users belonging to the same o
 ### 4. Reporting & Analytics
 - Executive dashboard with key financial health metrics.
 - One-click export of data to PDF (Audit ready) and Excel (Data analysis).
+- Ability to download reports as PDF and Excel files.
+- Store reports in Supabase Storage.
+- Provide ability to share reports with other users in the organization.
 - Customizable report builders for specific funder formats.
 
 ## Tech Stack
